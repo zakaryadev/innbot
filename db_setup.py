@@ -10,11 +10,24 @@ def setup_database():
         os.remove(DB_PATH)
         print("Removed old database file.")
 
-    try:
-        # User's CSV file has cp1251 encoding (ANSI from Windows Excel)
-        df = pd.read_csv(CSV_PATH, encoding='cp1251', sep=';')
-    except Exception as e:
-        print(f"Failed to read with cp1251/semicolon... Error: {e}")
+    df = None
+    attempts = [
+        {'encoding': 'cp1251', 'sep': ';'},
+        {'encoding': 'utf-8',   'sep': ';'},
+        {'encoding': 'utf-8',   'sep': ','},
+        {'encoding': 'latin-1', 'sep': ';'},
+        {'encoding': 'latin-1', 'sep': ','},
+    ]
+    for attempt in attempts:
+        try:
+            df = pd.read_csv(CSV_PATH, **attempt)
+            print(f"Read CSV with encoding={attempt['encoding']}, sep='{attempt['sep']}'")
+            break
+        except Exception as e:
+            print(f"Failed ({attempt['encoding']}/{attempt['sep']}): {e}")
+
+    if df is None:
+        print("ERROR: Could not read CSV file with any known encoding. Aborting.")
         return
     
     # Rename columns based on headers we discovered
