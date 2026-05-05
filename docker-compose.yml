@@ -7,5 +7,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
     volumes:
       - ./:/app

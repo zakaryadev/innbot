@@ -67,7 +67,8 @@ def setup_database():
     # Find any xlsx files relative to script location
     excel_files = glob.glob(os.path.join(BASE_DIR, "*.xlsx"))
     if not excel_files:
-        print("Xatolik: Original Excel fayllari topilmadi!")
+        print(f"Xatolik: Original Excel fayllari topilmadi in {BASE_DIR}!")
+        print(f"Barcha fayllar: {os.listdir(BASE_DIR)}")
         return
         
     dfs = []
