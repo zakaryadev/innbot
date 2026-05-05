@@ -22,3 +22,6 @@ data.db-journal
 # Antigravity / AI generated logs
 .gemini/
 .gemini
+
+# AI Agent configs
+.agent/
