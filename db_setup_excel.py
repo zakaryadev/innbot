@@ -4,6 +4,8 @@ import os
 from config import DB_PATH
 import glob
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def cyrillic_to_latin(text):
     if not isinstance(text, str):
         return text
@@ -62,10 +64,10 @@ def cyrillic_to_latin(text):
 def setup_database():
     print("Searching for original Excel files...")
     
-    # Let's find any xlsx files in the directory
-    excel_files = glob.glob("*.xlsx")
+    # Find any xlsx files relative to script location
+    excel_files = glob.glob(os.path.join(BASE_DIR, "*.xlsx"))
     if not excel_files:
-        print("Xatolik: Original Excel fayllari topilmadi! Iltimos, papkaga .xlsx fayllarni tashlang.")
+        print("Xatolik: Original Excel fayllari topilmadi!")
         return
         
     dfs = []
