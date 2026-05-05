@@ -24,4 +24,4 @@ data.db-journal
 .gemini
 
 # AI Agent configs
-.agent/
+.agent
