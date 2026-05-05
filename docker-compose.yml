@@ -7,6 +7,3 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    volumes:
-      # Mount the database file so it persists and can be updated from the host
-      - ./data.db:/app/data.db

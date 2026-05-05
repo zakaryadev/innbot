@@ -14,5 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
-# Start the bot
-CMD ["python", "bot.py"]
+# Make entrypoint executable
+RUN chmod +x entrypoint.sh
+
+# Auto-create DB and start bot
+ENTRYPOINT ["/bin/bash", "entrypoint.sh"]
