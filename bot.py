@@ -44,12 +44,12 @@ async def search_handler(message: types.Message):
     for org in results:
         name = org.get('name', "Noma'lum")
         inn = org.get('inn', "Noma'lum")
-        phone = org.get('phone', "Mavjud emas")
+        # phone = org.get('phone', "Mavjud emas")
         
         org_text = (
             f"🏢 <b>Nomi:</b> {name}\n"
             f"🆔 <b>INN:</b> <code>{inn}</code>\n"
-            f"📞 <b>Telefon:</b> {phone}\n"
+            # f"📞 <b>Telefon:</b> {phone}\n"
             "➖➖➖➖➖➖➖➖➖➖"
         )
         response_lines.append(org_text)
