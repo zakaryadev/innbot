@@ -1,42 +1,22 @@
-# Transliteration Plan (Cyrillic to Latin)
+# Имплементация нечеткого поиска (Fuzzy Search)
 
-## Objective
-Fix errors in `Нокис хамме мекемелер.csv` by transliterating all Cyrillic text to the Latin alphabet. Maintain the linguistic integrity by correctly applying Karakalpak Latin rules to Karakalpak text, and Uzbek Latin rules to Uzbek text.
+## Контекст
+Необходимо улучшить функцию поиска в Telegram-боте (`database.py`), чтобы он понимал опечатки, пропущенные гласные (например "dslq" вместо "dosliq") и разницу в символах (например "ı" и "i"). Будет использован подход на базе библиотеки `thefuzz` (Option A).
 
-## Approach
+## Цели (Goals)
+1. Установить и добавить в зависимости `thefuzz` и `python-Levenshtein`.
+2. Изменить логику в `database.py`:
+   - Сначала загружать все имена из БД (кэшировать или загружать на лету, так как записей всего 440).
+   - Использовать `process.extract` или `fuzz.WRatio` / `fuzz.partial_ratio` для получения топ-10 результатов по введенному запросу.
+   - Фильтровать результаты по порогу совпадения (например, score > 60), чтобы "dslq" могло найти "dosliq".
+3. Обновить `requirements.txt`.
+4. Перезапустить Docker-контейнер с пересборкой (rebuild), так как добавлены новые зависимости.
 
-1. **Language Detection Strategy**
-   - We will write a Python script that reads the CSV.
-   - For each organization name, we will detect the language based on common keywords and specific characters:
-     - **Karakalpak Markers**: "Қарақалпақстан", "Нөкис", "бөлими", "орайы", "министрлиги", "ҳәм", "хызмети", "мәкемеси", "мәкән", "аўыл", "жәмийети", "кәрханасы".
-     - **Uzbek Markers**: "Қорақалпоғистон", "Нукус", "бўлими", "маркази", "вазирлиги", "ва", "хизмати", "муассасаси", "маҳалла", "қишлоқ", "жамияти", "корхонаси".
-   - Specific character markers:
-     - Characters like `ө`, `ү`, `ң`, `ә`, `ў` (pronounced as 'w') indicate **Karakalpak**.
-     - Characters like `ў` (pronounced as 'o''), and absence of Karakalpak-specific letters indicate **Uzbek**.
+## Шаги реализации (Implementation Steps)
+1. **[backend-specialist]**: Отредактировать `database.py`. Добавить нормализацию символов "ı -> i", "o' -> o" (как вспомогательный фильтр для повышения точности) и применить `thefuzz.process` для поиска по всем организациям, если запрос не числовой (не ИНН).
+2. **[backend-specialist]**: Обновить `requirements.txt`, добавив `thefuzz` и `python-Levenshtein`.
+3. **[test-engineer]**: Протестировать функцию локально с помощью проверочного скрипта (ввод "dslq", "dosliq", "markaz" и т.д.).
+4. **[devops-engineer]**: Подготовить команды для деплоя на сервер (остановка, `git pull`, пересборка контейнера с новыми библиотеками).
 
-2. **Transliteration Rules**
-   - **Karakalpak**: Map Cyrillic to Latin using the latest Karakalpak Latin alphabet:
-     - `ғ` -> `ǵ`
-     - `ў` -> `w`
-     - `ң` -> `ń`
-     - `ө` -> `ó`
-     - `ү` -> `ú`
-     - `ә` -> `á`
-     - `қ` -> `q`
-     - `и` -> `i` / `ı` (context-dependent, simplified to standard `i`/`ı` rules or basic `i`)
-   - **Uzbek**: Map Cyrillic to Latin using the standard Uzbek Latin alphabet:
-     - `ғ` -> `g'`
-     - `ў` -> `o'`
-     - `қ` -> `q`
-     - `ҳ` -> `h`
-     - `ч` -> `ch`
-     - `ш` -> `sh`
-     - `я` -> `ya`
-     - `ю` -> `yu`
-     - `ц` -> `ts`
-
-3. **Execution Steps**
-   - **Step 1:** Orchestrator (project-planner mode) creates `docs/PLAN.md` and gets user approval. *(We are here)*
-   - **Step 2 (Implementation):** `backend-specialist` agent will develop and execute a Python script (`transliterate_csv.py`) that applies the logic to `Нокис хамме мекемелер.csv`.
-   - **Step 3 (Review):** `database-architect` or `test-engineer` agent will verify the resulting CSV, ensuring data integrity (columns are intact, no Cyrillic chars left, correct mappings applied).
-   - **Step 4 (Completion):** Provide the final cleaned CSV file to the user.
+## Ожидаемый результат
+Пользователь сможет писать "dslq", "dosliq", "markazi", "markzi" и бот будет стабильно возвращать релевантные организации, игнорируя регистр, мелкие опечатки и пропуски букв.
