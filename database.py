@@ -39,7 +39,12 @@ def search_organizations(query: str, limit: int = 10):
         # If found by exact number, return immediately
         if results:
             conn.close()
-            return [dict(row) for row in results]
+            ret = []
+            for row in results:
+                d = dict(row)
+                d['similarity'] = 100
+                ret.append(d)
+            return ret
     
     # Fuzzy Search for text
     cursor.execute("SELECT * FROM organizations")
@@ -66,6 +71,8 @@ def search_organizations(query: str, limit: int = 10):
     for match_str, score, idx in best_matches:
         # 60 is a good threshold for partial matches with typos
         if score >= 60:
-            results.append(dict(all_rows[idx]))
+            d = dict(all_rows[idx])
+            d['similarity'] = score
+            results.append(d)
             
     return results
