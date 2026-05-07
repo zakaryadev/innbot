@@ -27,16 +27,17 @@ def search_organizations(query: str, limit: int = 10):
     conn = get_connection()
     cursor = conn.cursor()
     
-    # Check if query is fully numeric
-    if query.strip().isdigit():
-        # Search by ID or INN
+    query_clean = query.strip()
+    
+    # Eger 9 xanalı san bolsa, bul INN bolıwı múmkin
+    if query_clean.isdigit() and len(query_clean) == 9:
         cursor.execute(
-            "SELECT * FROM organizations WHERE id = ? OR inn = ? LIMIT ?",
-            (query.strip(), query.strip(), limit)
+            "SELECT * FROM organizations WHERE inn = ? LIMIT ?",
+            (query_clean, limit)
         )
         results = cursor.fetchall()
         
-        # If found by exact number, return immediately
+        # Eger INN boyınsha tabılsa, birden qaytaramız
         if results:
             conn.close()
             ret = []
