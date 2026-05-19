@@ -117,3 +117,123 @@ def search_organizations(query: str, limit: int = 10):
         results.append(d)
             
     return results
+
+
+# --- Phone Numbers ---
+
+def init_phone_table():
+    conn = get_connection()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS phone_numbers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            org_id TEXT NOT NULL,
+            phone_name TEXT NOT NULL,
+            phone_number TEXT NOT NULL,
+            FOREIGN KEY (org_id) REFERENCES organizations(id)
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+def get_org_by_id(org_id: str):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM organizations WHERE id = ?", (org_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_phones_by_org(org_id: str):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM phone_numbers WHERE org_id = ? ORDER BY id",
+        (org_id,)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def add_phone(org_id: str, phone_name: str, phone_number: str) -> int:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO phone_numbers (org_id, phone_name, phone_number) VALUES (?, ?, ?)",
+        (org_id, phone_name, phone_number)
+    )
+    conn.commit()
+    new_id = cursor.lastrowid
+    conn.close()
+    return new_id
+
+
+def update_phone(phone_id: int, phone_name: str, phone_number: str):
+    conn = get_connection()
+    conn.execute(
+        "UPDATE phone_numbers SET phone_name = ?, phone_number = ? WHERE id = ?",
+        (phone_name, phone_number, phone_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_phone(phone_id: int):
+    conn = get_connection()
+    conn.execute("DELETE FROM phone_numbers WHERE id = ?", (phone_id,))
+    conn.commit()
+    conn.close()
+
+
+def get_phone_by_id(phone_id: int):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM phone_numbers WHERE id = ?", (phone_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+# --- Organization CRUD ---
+
+def get_next_org_id() -> str:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT MAX(CAST(id AS INTEGER)) FROM organizations")
+    row = cursor.fetchone()
+    conn.close()
+    max_id = row[0] if row[0] else 0
+    return str(max_id + 1)
+
+
+def add_organization(name: str, inn: str) -> str:
+    conn = get_connection()
+    cursor = conn.cursor()
+    new_id = get_next_org_id()
+    cursor.execute(
+        "INSERT INTO organizations (id, name, inn, phone) VALUES (?, ?, ?, ?)",
+        (new_id, name, inn, "N/A")
+    )
+    conn.commit()
+    conn.close()
+    return new_id
+
+
+def update_organization(org_id: str, name: str, inn: str):
+    conn = get_connection()
+    conn.execute(
+        "UPDATE organizations SET name = ?, inn = ? WHERE id = ?",
+        (name, inn, org_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_organization(org_id: str):
+    conn = get_connection()
+    conn.execute("DELETE FROM phone_numbers WHERE org_id = ?", (org_id,))
+    conn.execute("DELETE FROM organizations WHERE id = ?", (org_id,))
+    conn.commit()
+    conn.close()
