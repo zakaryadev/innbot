@@ -25,4 +25,3 @@ data.db-journal
 
 # AI Agent configs
 .agent
-.env
